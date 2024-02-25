@@ -1,7 +1,8 @@
-
 import numpy as np
 from numpy.typing import NDArray
 from json import load, dump, dumps
+from typing import Literal
+
 
 class DB:
     vectors: list[list[NDArray[np.float64]]]
@@ -44,10 +45,53 @@ class DB:
         self.vectors.append(np.array([], dtype=np.float64))
         self.save()
 
-    def add_vector(self, table_name:str, vector: NDArray[np.float64]):
+    def add_vector(self, table_name: str, vector: NDArray[np.float64]):
         index = self.table_names.index(table_name)
         self.vectors[index].append(vector)
         self.save()
 
-        
-        
+    def get_n_neighbors(
+        self,
+        table_name: str,
+        vector: NDArray[np.float64],
+        metric: Literal["dot_product", "euclidean", "cosine"] = "dot_product",
+        n: int = 10,
+    ):
+        index = self.table_names.index(table_name)
+        sorted_vectors: list[tuple[int, float]] = []
+        if metric == "dot_product":
+            for i, v in enumerate(self.vectors[index]):
+                sorted_vectors.append((i, np.dot(v, vector)))
+            sorted_vectors.sort(key=lambda x: x[1], reverse=True)
+        elif metric == "euclidean":
+            for i, v in enumerate(self.vectors[index]):
+                sorted_vectors.append((i, np.linalg.norm(v - vector)))
+            sorted_vectors.sort(key=lambda x: x[1])
+        elif metric == "cosine":
+            for i, v in enumerate(self.vectors[index]):
+                sorted_vectors.append(
+                    (
+                        i,
+                        np.dot(v, vector)
+                        / (np.linalg.norm(v) * np.linalg.norm(vector)),
+                    )
+                )
+            sorted_vectors.sort(key=lambda x: x[1], reverse=True)
+        else:
+            raise ValueError(f"Invalid metric: {metric}")
+
+        vectors = [self.vectors[index][i] for i, _ in sorted_vectors[:n]]
+        final = []
+        table_index = self.table_names.index(table_name)
+        for i, v in enumerate(vectors):
+            hashed = hash(v.tolist())
+            final.append(
+                {
+                    "index": sorted_vectors[i][0],
+                    "distance": sorted_vectors[i][1],
+                    "hash": hashed,
+                    "text": self.tables[table_index][str(hashed)],
+                }
+            )
+        return final
+
