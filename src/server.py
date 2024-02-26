@@ -1,8 +1,9 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from json import dumps
+from json import dumps, loads
 from database import DB
 
 db = DB()
+
 
 class Handler(BaseHTTPRequestHandler):
 
@@ -19,16 +20,51 @@ class Handler(BaseHTTPRequestHandler):
         self.send(status, dumps(data), "application/json")
 
     def do_POST(self):
-        if not self.path.startswith("/api"):
-            self.send_response(404)
-            self.end_headers()
-            return
-
+        content_length = int(self.headers["Content-Length"])
+        body = self.rfile.read(content_length)
+        data = loads(body)
         if self.path == "/api/table":
-            self.send_json(200, db.database)
+            """
+            {
+                "table_name": str
+            }
+            """
+            db.add_table(**data)
+            self.send(200, "OK")
+
+        elif self.path == "/api/vector/add":
+            """
+            {
+                "table_name": str,
+                "vector": float[]
+                "text": str
+            }
+            """
+            db.add_vector(**data)
+            self.send(200, "OK")
+
+        elif self.path == "/api/neighbors":
+            """
+            {
+                "table_name": str,
+                "vector": float[],
+                "metric": "dot_product" | "euclidean" | "cosine",
+                "n": int
+            }
+            """
+            neighbors = db.get_n_neighbors(**data)
+            self.send_json(200, neighbors)
+
+        else:
+            self.send(404, "Not Found")
 
 
 server = ThreadingHTTPServer(("0.0.0.0", 80), Handler)
 
+
 def run_server():
     server.serve_forever()
+
+if __name__=="__main__":
+    print("Server started at http://localhost:80")
+    run_server()

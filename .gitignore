@@ -1,1 +1,4 @@
 /tests/embed_db
+/tests/data
+/data
+*__pycache__*
