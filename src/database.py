@@ -27,6 +27,10 @@ class DB:
     def add_vector(
         self, table_name: str, vector: list[float], text: str, save: bool = True
     ):
+        if table_name not in self.tables:
+            self.add_table(table_name)
+        if any(i == text for i in self.tables[table_name].values()):
+            raise ValueError("Text already exists in the table")
         self.tables[table_name][vector] = text
         if save:
             self.save()
