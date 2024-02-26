@@ -20,11 +20,25 @@ class DB:
             pkl_dump(self.tables, file)
 
     def add_table(self, table_name: str):
-        self.tables[table_name] = {}
-        self.save()
+        if table_name not in self.tables:
+            self.tables[table_name] = {}
+            self.save()
 
-    def add_vector(self, table_name: str, vector: list[float], text: str):
+    def add_vector(
+        self, table_name: str, vector: list[float], text: str, save: bool = True
+    ):
         self.tables[table_name][vector] = text
+        if save:
+            self.save()
+
+    def add_vectors(
+        self, table_name: str, vectors: list[list[float]], texts: list[str]
+    ):
+        assert len(vectors) == len(
+            texts
+        ), "Length of vectors and texts must be the same"
+        for vector, text in zip(vectors, texts):
+            self.add_vector(table_name, vector, text, save=False)
         self.save()
 
     def get_n_neighbors(

@@ -43,6 +43,17 @@ class Handler(BaseHTTPRequestHandler):
             db.add_vector(**data)
             self.send(200, "OK")
 
+        elif self.path == "/api/vectors/add":
+            """
+            {
+                "table_name": str,
+                "vectors": float[][],
+                "texts": str[]
+            }
+            """
+            db.add_vectors(**data)
+            self.send(200, "OK")
+
         elif self.path == "/api/neighbors":
             """
             {
