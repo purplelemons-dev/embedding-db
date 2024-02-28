@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from json import dumps, loads
 from database import DB
+from env import BEARER_TOKEN
 
 db = DB()
 
@@ -20,6 +21,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send(status, dumps(data), "application/json")
 
     def do_POST(self):
+        if self.headers.get("Authorization") != f"Bearer {BEARER_TOKEN}":
+            self.send(401, "Unauthorized")
+            return
         content_length = int(self.headers["Content-Length"])
         body = self.rfile.read(content_length)
         data = loads(body)
