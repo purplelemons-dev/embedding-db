@@ -66,6 +66,17 @@ class Handler(BaseHTTPRequestHandler):
             neighbors = db.get_n_neighbors(**data)
             self.send_json(200, neighbors)
 
+        elif self.path == "/api/tables":
+            self.send_json(200, {"tables": list(db.tables.keys())})
+
+        elif self.path == "/api/table/delete":
+            """
+            {
+                "table_name": str
+            }
+            """
+            db.delete_table(**data)
+
         else:
             self.send(404, "Not Found")
 
@@ -109,9 +120,21 @@ class Handler(BaseHTTPRequestHandler):
                         "body": {
                             "table_name": "str",
                             "vector": "float[]",
-                            "metric": "dot_product" | "euclidean" | "cosine",
+                            "metric": "dot_product | euclidean | cosine",
                             "n": "int",
                         },
+                    },
+                    {
+                        "endpoint": "/api/tables",
+                        "method": "POST",
+                        "description": "Get all tables",
+                        "response": {"tables": "str[]"},
+                    },
+                    {
+                        "endpoint": "/api/table/delete",
+                        "method": "POST",
+                        "description": "Delete a table",
+                        "body": {"table_name": "str"},
                     },
                 ]
             },

@@ -45,6 +45,11 @@ class DB:
             self.add_vector(table_name, vector, text, save=False)
         self.save()
 
+    def delete_table(self, table_name: str):
+        if table_name in self.tables:
+            del self.tables[table_name]
+            self.save()
+
     def get_n_neighbors(
         self,
         table_name: str,
