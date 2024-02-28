@@ -69,6 +69,54 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send(404, "Not Found")
 
+    def do_GET(self):
+        # list endpoints
+
+        self.send_json(
+            200,
+            {
+                "endpoints": [
+                    {
+                        "endpoint": "/api/table",
+                        "method": "POST",
+                        "description": "Add a table",
+                        "body": {"table_name": "str"},
+                    },
+                    {
+                        "endpoint": "/api/vector/add",
+                        "method": "POST",
+                        "description": "Add a vector to a table",
+                        "body": {
+                            "table_name": "str",
+                            "vector": "float[]",
+                            "text": "str",
+                        },
+                    },
+                    {
+                        "endpoint": "/api/vectors/add",
+                        "method": "POST",
+                        "description": "Add multiple vectors to a table",
+                        "body": {
+                            "table_name": "str",
+                            "vectors": "float[][]",
+                            "texts": "str[]",
+                        },
+                    },
+                    {
+                        "endpoint": "/api/neighbors",
+                        "method": "POST",
+                        "description": "Get the n neighbors of a vector in a table",
+                        "body": {
+                            "table_name": "str",
+                            "vector": "float[]",
+                            "metric": "dot_product" | "euclidean" | "cosine",
+                            "n": "int",
+                        },
+                    },
+                ]
+            },
+        )
+
 
 server = ThreadingHTTPServer(("0.0.0.0", 80), Handler)
 
@@ -76,6 +124,7 @@ server = ThreadingHTTPServer(("0.0.0.0", 80), Handler)
 def run_server():
     server.serve_forever()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     print("Server started at http://localhost:80")
     run_server()
