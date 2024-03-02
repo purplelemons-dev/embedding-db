@@ -16,31 +16,36 @@ class DB:
             self.save()
 
     def save(self):
-        with open("data/tables.pkl", "wb") as file:
-            pkl_dump(self.tables, file)
+        try:
+            with open("data/tables.pkl", "wb") as file:
+                pkl_dump(self.tables, file)
+        except:
+            print("Error saving database")
 
     def add_table(self, table_name: str):
-        if table_name not in self.tables:
-            self.tables[table_name] = {}
-            self.save()
+        self.tables[table_name] = {}
+        self.save()
 
     def add_vector(
         self, table_name: str, vector: list[float], text: str, save: bool = True
     ):
-        if table_name not in self.tables:
+        if not self.tables.get(table_name):
             self.add_table(table_name)
         if any(i == text for i in self.tables[table_name].values()):
             raise ValueError("Text already exists in the table")
-        self.tables[table_name][vector] = text
+        self.tables[table_name][text] = vector
         if save:
             self.save()
 
     def add_vectors(
         self, table_name: str, vectors: list[list[float]], texts: list[str]
     ):
+        print(len(vectors), len(texts))
         assert len(vectors) == len(
             texts
         ), "Length of vectors and texts must be the same"
+        if not self.tables.get(table_name):
+            self.add_table(table_name)
         for vector, text in zip(vectors, texts):
             self.add_vector(table_name, vector, text, save=False)
         self.save()
@@ -61,8 +66,8 @@ class DB:
             vector = loads(vector)
         sorted_vectors: list[tuple[int, float]] = []
 
-        for i, (v, text) in enumerate(self.tables[table_name].items()):
-            v = loads(v)
+        for i, (text, v) in enumerate(self.tables[table_name].items()):
+            # v = loads(v)
             if metric == "dot_product":
                 similarity = np.dot(vector, v)
             elif metric == "euclidean":

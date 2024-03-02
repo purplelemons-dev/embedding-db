@@ -33,8 +33,8 @@ class Handler(BaseHTTPRequestHandler):
                 "table_name": str
             }
             """
-            db.add_table(**data)
             self.send(200, "OK")
+            db.add_table(**data)
 
         elif self.path == "/api/vector/add":
             """
@@ -44,8 +44,8 @@ class Handler(BaseHTTPRequestHandler):
                 "text": str
             }
             """
-            db.add_vector(**data)
             self.send(200, "OK")
+            db.add_vector(**data)
 
         elif self.path == "/api/vectors/add":
             """
@@ -55,8 +55,8 @@ class Handler(BaseHTTPRequestHandler):
                 "texts": str[]
             }
             """
-            db.add_vectors(**data)
             self.send(200, "OK")
+            db.add_vectors(**data)
 
         elif self.path == "/api/neighbors":
             """
@@ -79,6 +79,7 @@ class Handler(BaseHTTPRequestHandler):
                 "table_name": str
             }
             """
+            self.send(200, "OK")
             db.delete_table(**data)
 
         else:
